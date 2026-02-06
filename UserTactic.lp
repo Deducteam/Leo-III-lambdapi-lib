@@ -145,6 +145,19 @@ symbol stepwise_quants: 𝕃 tactic → Tactic;
 rule stepwise_quants ($sk1 ⸬ ($sk2 ⸬ $sk3)) ↪ #repeat ((#and $sk1 (stepwise_quants ($sk2 ⸬ $sk3))) #orelse boolIds)
 with stepwise_quants ($sk1 ⸬ □) ↪ #and (#repeat ($sk1 #orelse boolIds)) #reflexivity;
 
+symbol move_∀_out_dijs ≔ #repeat (#rewrite  "" "" ∀∨_dist_r) #orelse (#rewrite "" "" ∀∨_dist_l);
+
 symbol move_∀_out (assumeVar: Tactic) ≔ ((#and (#and (((#and (#repeat  (#rewrite "" ".[x in x = _]" ¬¬ₑ_eq)) (#refine "∀_ext _"))) #orelse (#refine "∀_ext _")) (#simplify_beta)) assumeVar) #orelse ((#rewrite "" "" ∀∧_dist_r) #orelse (#rewrite  "" "" ∀∧_dist_l) #orelse (#rewrite  "" "" ∀∨_dist_r) #orelse (#rewrite "" "" ∀∨_dist_l)));
 
 symbol move_¬∃_out (assumeVar: Tactic) ≔ (#and (#rewrite "" "" ¬∃=∀¬) (move_∀_out assumeVar));
+
+
+/******************************************************************************
+ *  Implicit Transformations         
+ ******************************************************************************/
+
+//symbol removeTrivialFalse (pattern: String) ≔ #and (#try ((#rewrite "" pattern ¬=_idem) #orelse (#rewrite "" pattern ¬⊤))) (#try ((#rewrite "" pattern ∨⊥) #orelse (#rewrite "" pattern ⊥∨)));
+symbol removeTrivialFalse (pattern: String) ≔ #try ((#rewrite "" pattern ¬=_idem) #orelse (#rewrite "" pattern ¬⊤));
+
+// perform operaitions done implicitly by mkLitreral in Leo
+symbol normalizeLiteral (pattern: String) ≔ (#rewrite "" pattern =⊤) #orelse (#rewrite "left" pattern =⊤) #orelse (#rewrite "" pattern =⊥) #orelse (#rewrite "left" pattern =⊥); //todo: account for possible different polarities

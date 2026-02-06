@@ -72,6 +72,14 @@ begin
     reflexivity
 end;
 
+opaque symbol eta_exp_∃ [a : Set] (f : τ (a ⤳ o)) : 
+    π(∃ f = `∃ x, f x)≔
+begin
+    assume a f;
+    rewrite .[x in ∃ x = _] eta_exp f;
+    reflexivity
+end;
+
 opaque symbol ¬∀=∃¬ (t : Set) (p : τ (t ⤳ o)) : 
     π (¬(∀ p) = (`∃ (x : τ t), ¬ (p x)))≔
 begin
@@ -100,8 +108,12 @@ opaque symbol ¬∃=∀¬ (t : Set) (p : τ t → τ o) :
 begin
 assume t p;
 refine propExt (¬ (∃ p)) (`∀ x, ¬ p x) _ _
-    {assume h a ha; refine h (∃ᵢ [t] [p] a ha)}
-    {assume h1 h2; refine ∃ₑ [t] [p] h2 (λ a ha, (h1 a) ha)}
+    {assume h a ha; 
+    have H0: π (∃ p)
+        {rewrite eta_exp_∃; refine (∃ᵢ [t] [p] a ha)};
+    refine h H0}
+    {assume h1 h2; 
+    refine ∃ₑ [t] [p] (=⇒ (eta_exp_∃ p) h2) (λ a ha, (h1 a) ha)}
 end;
 
 
@@ -111,7 +123,7 @@ opaque symbol εᵢ_rev :  Π [a: Set], Π p: (τ a → Prop),
     π (p (ε p)) → π (∃ p)≔
 begin
     assume a p h;
-    refine ∃ᵢ [a] [p] (ε p) h
+    refine =⇒ (eq_sym (eta_exp_∃ p)) (∃ᵢ [a] [p] (ε p) h)
 end;
 
 opaque symbol ∃_skolem (a: Set) (p: τ (a ⤳ o)) :  

@@ -136,3 +136,31 @@ begin
                 {assume h3;
                 refine ∨ᵢ₁ h3}
 end;
+
+////////// Unification
+
+opaque symbol Decomp_step [a b : Set] (s t : τ a) (f g : τ(a ⤳ b)): 
+    π (¬ (f s = g t)) → π  (¬ (f = g) ∨ ¬ (s = t)) ≔
+ begin
+    assume a b s t f g h0;
+    refine ∨ₑ (em (s = t)) _ _
+        {assume h1; refine ∨ₑ (em (f = g)) _ _
+            {assume h2;
+            refine ⊥ₑ [¬ (f = g) ∨ ¬ (s = t)] (h0 (ind_eq h1 (λ x, f x = g t) (ind_eq h2 (λ x, x t = g t) (eq_refl (g t)))))}
+            {assume h2; refine ∨ᵢ₁ h2}}
+        {assume h1; refine ∨ᵢ₂ h1}
+ end;
+
+ opaque symbol Decomp_single [a b : Set] (s t : τ a) (f : τ(a ⤳ b)): 
+    π (¬ (f s = f t)) → π (¬ (s = t)) ≔
+ begin
+    assume a b s t f h0;
+    refine ∨ₑ (em (s = t)) _ _
+        {assume h1; 
+        have H0 : π (¬ (f s = f t) ⇒ ⊥)
+            {rewrite h1;
+            rewrite ¬=_idem;
+            assume h2; refine h2};
+        refine ⊥ₑ (H0 h0)}
+        {assume h1; refine h1}
+ end;

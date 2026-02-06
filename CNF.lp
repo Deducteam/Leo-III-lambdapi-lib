@@ -23,7 +23,7 @@ The clausification process is split up into four seperate processes:
 
 require open Stdlib.FunExt;
 require open Stdlib.Impred Stdlib.PropExt;
-require open Leo-III-lambdapi-lib.MetaTheorems;
+require open Stdlib.Conj;
 require open Leo-III-lambdapi-lib.CNFeq;
 
 
