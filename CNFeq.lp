@@ -1,14 +1,20 @@
-require open Stdlib.Set Stdlib.Prop Stdlib.Classic Stdlib.FOL Stdlib.HOL Stdlib.Eq Stdlib.Impred Stdlib.FunExt Stdlib.PropExt Stdlib.Nat Stdlib.Bool Stdlib.List Stdlib.Epsilon;
+/* 
+---------------------------------------------------------------------------
+Library on rewrite-tactic-based clausification of Leo-III
+---------------------------------------------------------------------------
 
-// prelim: to be added to the stdlib
+This file contains boolean equalities that complement the theorems
+already present in the Lambdapi standard library with additional
+boolean identities necessary for the full verification of the Leo-III
+clausification procedure.
+---------------------------------------------------------------------------
+*/
 
-opaque symbol eta_exp [a] [b] (f : τ a → τ b) :  
-    π (f = (λ y , f y))≔
-begin
-    assume a b f; 
-    refine funExt f (λ y , f y) _;
-    simplify; reflexivity
-end;
+require open Stdlib.FunExt Stdlib.PropExt Stdlib.Epsilon;
+
+/******************************************************************************
+*  Handling of Connectives        
+******************************************************************************/
 
 opaque symbol ∨_sym x y : π ((x ∨ y) = (y ∨ x))≔
 begin
@@ -31,10 +37,6 @@ begin
     {assume h; refine ∧ᵢ (∧ₑ₂ h) (∧ₑ₁ h)}
     {assume h; refine ∧ᵢ (∧ₑ₂ h) (∧ₑ₁ h)}
 end;
-
-/******************************************************************************
-*  Definition of Leo-III simplification tactic        
-******************************************************************************/
 
 opaque symbol ¬x=_idem : Π x, 
     π (((¬ x) = x) = ⊥)≔
@@ -61,8 +63,16 @@ end;
 
 
 /******************************************************************************
-*  Definition of additional rules for clausification      
+*  Binder Handling   
 ******************************************************************************/
+
+opaque symbol eta_exp [a] [b] (f : τ a → τ b) :  
+    π (f = (λ y , f y))≔
+begin
+    assume a b f; 
+    refine funExt f (λ y , f y) _;
+    simplify; reflexivity
+end;
 
 opaque symbol eta_exp_∀ [a : Set] (f : τ (a ⤳ o)) : 
     π(∀ f = `∀ x, f x)≔
@@ -117,7 +127,7 @@ refine propExt (¬ (∃ p)) (`∀ x, ¬ p x) _ _
 end;
 
 
-//  Skolemisazion
+// Skolemisazion
 
 opaque symbol εᵢ_rev :  Π [a: Set], Π p: (τ a → Prop),  
     π (p (ε p)) → π (∃ p)≔
@@ -144,7 +154,7 @@ begin
 end;
 
 
-//Quantifier Distributivity
+// Quantifier Distributivity
 
 opaque symbol ∀∧_dist_r t a (p : τ(t ⤳ o)): π ((a ∧ ∀ p) = (`∀ x, a ∧ p x))≔
 begin

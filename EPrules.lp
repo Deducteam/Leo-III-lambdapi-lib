@@ -1,9 +1,15 @@
+/* 
+---------------------------------------------------------------------------
+Library on encoded EP rules used in the verification of Leo-III
+---------------------------------------------------------------------------
+
+Note that this library only includes rules that are already used in
+the current implementation of the Lambdapi-producing version of Leo-III.
+---------------------------------------------------------------------------
+*/
+
 require open Stdlib.HOL;
 require open Stdlib.PropExt;
-
-///////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////// CALCULUS RULES /////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
 
 ////////// Extensionality  
 

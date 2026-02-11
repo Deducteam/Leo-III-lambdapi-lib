@@ -1,4 +1,24 @@
-require open Stdlib.Set Stdlib.Prop Stdlib.Classic Stdlib.FOL Stdlib.HOL Stdlib.Eq Stdlib.Impred Stdlib.FunExt Stdlib.PropExt Stdlib.Nat Stdlib.Bool Stdlib.List Stdlib.Epsilon Leo-III-lambdapi-lib.CNFeq;
+/* 
+---------------------------------------------------------------------------
+Library on User-Defined Tactics for Leo-III Verification
+---------------------------------------------------------------------------
+
+This file defines user-defined tactics used in the verification of
+Leo-III proofs within Lambdapi. It introduces the abstract `Tactic`
+type together with basic tactic combinators and derived strategies
+for clausification steps, including:
+
+  • Term simplification
+  • Clausification including Skolemization and Quantifier transformations
+  • Literal Normalization
+---------------------------------------------------------------------------
+*/
+
+require open Stdlib.HOL Stdlib.Impred Stdlib.List Leo-III-lambdapi-lib.CNFeq;
+
+/******************************************************************************
+ *  Setup for the user defined tactic         
+ ******************************************************************************/
 
  constant symbol Tactic : TYPE;
  symbol tactic : Set;
@@ -78,13 +98,12 @@ require open Stdlib.Set Stdlib.Prop Stdlib.Classic Stdlib.FOL Stdlib.HOL Stdlib.
  
  // necessary in order to define the tactics
  protected symbol set0 : Set;
- rule τ set0 ↪ Set;
+ rule τ set0 ↪ Set; 
 
 
- /******************************************************************************
- *  Setup for the user defined tactic         
+/******************************************************************************
+ *  Tactic for Leo-III term simplification        
  ******************************************************************************/
- 
   
 symbol applyAny : 𝕃 tactic → Tactic;
  rule applyAny ($t0 ⸬ ($t1 ⸬ $tl)) ↪ $t0 #orelse (applyAny ($t1 ⸬ $tl))
@@ -156,8 +175,8 @@ symbol move_¬∃_out (assumeVar: Tactic) ≔ (#and (#rewrite "" "" ¬∃=∀¬)
  *  Implicit Transformations         
  ******************************************************************************/
 
-//symbol removeTrivialFalse (pattern: String) ≔ #and (#try ((#rewrite "" pattern ¬=_idem) #orelse (#rewrite "" pattern ¬⊤))) (#try ((#rewrite "" pattern ∨⊥) #orelse (#rewrite "" pattern ⊥∨)));
+// Identification of trivially false literals with ⊥
 symbol removeTrivialFalse (pattern: String) ≔ #try ((#rewrite "" pattern ¬=_idem) #orelse (#rewrite "" pattern ¬⊤));
 
-// perform operaitions done implicitly by mkLitreral in Leo
-symbol normalizeLiteral (pattern: String) ≔ (#rewrite "" pattern =⊤) #orelse (#rewrite "left" pattern =⊤) #orelse (#rewrite "" pattern =⊥) #orelse (#rewrite "left" pattern =⊥); //todo: account for possible different polarities
+// Normalisation of eqational literals with ⊤ or ⊥ on one side to non-equational ones
+symbol normalizeLiteral (pattern: String) ≔ (#rewrite "" pattern =⊤) #orelse (#rewrite "left" pattern =⊤) #orelse (#rewrite "" pattern =⊥) #orelse (#rewrite "left" pattern =⊥); 

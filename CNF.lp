@@ -1,30 +1,64 @@
-/* Library on proving the normalisazion to CNF by reflection
+/* 
+---------------------------------------------------------------------------
+Library on proving the normalisazion to CNF by reflection
+---------------------------------------------------------------------------
 
--------------------
+Overview
+--------
+This file contains a (partial) encoding of the Leo-III clausification
+procedure. The encoding relies on proof by reflection:
 
-The clausification process is split up into four seperate processes:
+  1. Formulas from the standard library are reified into a 
+     dedicated representation.
+  2. Normalization rules are executed computationally using rewrite rules.
+  3. The normalized formulas are interpreted back into Prop.
+  4. Correctness theorems connect computation with logical equivalence.
 
-** Negation Normal Form:
-    A number of standard rules are applied exhaustiveley:
-    - Rules like the Demorgan rules and double literal deletion are applied to move negation inwards.
-    - Negated universal quantifiers are transformed to existential quantifiers and vice versa. 
-    - Implications is replaced by a disjunction (where the LHS of the implication is negated)
 
-** Quantifier Generalisazion (WIP)
-   Universal quantifiers are moved to the outer scope of the formulas
+Clausification Phases
+---------------------
 
-** Distributivity:
-   Disjunctions vontaining Conjunctions are rewritten to conjunctions of disjunctions.
+The clausification pipeline is decomposed into independent transformations:
 
-** Associativity: (WIP)
-   ...
-   
+** 1. Negation Normal Form (NNF)
+     - Push negations inward (De Morgan, double negation elimination)
+     - Eliminate implications
+     - Transform quantifiers under negation
+
+** 2. Quantifier Generalization (Work in Progress)
+     - Lift universal quantifiers to outer scope
+
+** 3. Distributivity
+     - Rewrite disjunctions over conjunctions
+     - Construct conjunctions of disjunctions
+
+** 4. Associativity / Structural Normalization (Work in Progress)
+     - Canonical restructuring of boolean connectives
+
+Each phase is verified independently via reflection lemmas.
+
+
+Contents
+--------
+
+  • NNF syntax, reification, denotation, normalization
+  • Proof of semantic correctness for NNF
+  • Distributivity encoding using list-based constructions
+  • Proof of semantic correctness for distributivity
+  • Small application examples
+
+
+Notes
+-----
+
+This encoding is currently experimental and not yet integrated into the
+full proof translation pipeline. Future work will extend the missing
+clausification phases and connect them to the Leo-III backend.
+
+---------------------------------------------------------------------------
 */
 
-require open Stdlib.FunExt;
-require open Stdlib.Impred Stdlib.PropExt;
-require open Stdlib.Conj;
-require open Leo-III-lambdapi-lib.CNFeq;
+require open Stdlib.Conj Leo-III-lambdapi-lib.CNFeq;
 
 
 symbol a : Prop;
@@ -35,9 +69,9 @@ symbol e : Prop;
 symbol p: τ ι → Prop;
 
 
-////////////////////////////////////////////////////////////////////////////////
-/////////////////////////// Negation Normal Form ///////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+*  Negation Normal Form       
+******************************************************************************/
 
 // Setup
 
@@ -185,9 +219,9 @@ begin
 end;
 
 
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////// Distributivity //////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************
+*  Distributivit     
+******************************************************************************/
 
 // Setup
 
