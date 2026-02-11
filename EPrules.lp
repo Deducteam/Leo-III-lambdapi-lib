@@ -11,7 +11,12 @@ the current implementation of the Lambdapi-producing version of Leo-III.
 require open Stdlib.HOL;
 require open Stdlib.PropExt;
 
-////////// Extensionality  
+
+/******************************************************************************
+*  Extensionality     
+******************************************************************************/
+
+// Positive Functional Extensionality
 
 opaque symbol PFE [T] [S] (f g : τ (S ⤳ T)) (x : τ S): 
       π (f = g) → π (f x = g x) ≔
@@ -19,6 +24,8 @@ begin
 	assume T S f g x h;
     refine ind_eq h (λ y, y x = g x) (eq_refl [T] (g x))
 end;
+
+// Positive Boolean Extensionality
 
 opaque symbol PBE_r x y: π(x = y) → π(x ∨ ¬ y)≔
 begin
@@ -37,6 +44,8 @@ begin
             refine ∨ᵢ₁ h2}};
     refine ind_eq h (λ z, ¬ z ∨ y) em_sym;
 end;
+
+// Negative Boolean Extensionality
 
 opaque symbol NBE_p x y: π(¬(x = y)) → π(x ∨ y)≔
 begin
@@ -79,7 +88,11 @@ begin
 end;
 
 
-////////// Equal Factoring
+/******************************************************************************
+*  Primary Inference Rules    
+******************************************************************************/
+
+// Equal Factoring
 
 opaque symbol EqFact_p [T : Set] (x y z v : τ T): 
         π (x = y ∨ z = v) → π (x = y ∨ ¬ (x = z) ∨ ¬ (y = v))≔
@@ -143,7 +156,12 @@ begin
                 refine ∨ᵢ₁ h3}
 end;
 
-////////// Unification
+
+/******************************************************************************
+*  Unification     
+******************************************************************************/
+
+// Decomposition
 
 opaque symbol Decomp_step [a b : Set] (s t : τ a) (f g : τ(a ⤳ b)): 
     π (¬ (f s = g t)) → π  (¬ (f = g) ∨ ¬ (s = t)) ≔
