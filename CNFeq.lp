@@ -61,6 +61,13 @@ begin
     refine ¬x=_idem x
 end;
 
+opaque symbol =⊥' x : π (¬ (x = ⊥) = x)≔
+begin
+	assume x;
+	rewrite =⊥;
+	rewrite ¬¬ₑ_eq;
+	reflexivity
+end;
 
 /******************************************************************************
 *  Binder Handling   
