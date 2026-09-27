@@ -46,10 +46,10 @@ symbol applyAny : 𝕃 tactic → Tactic;
  symbol listOfAllSimpRules ≔ ((#rewrite "" "" ∨_idem) ⸬ (#rewrite "" "" em_eq_l) ⸬ (#rewrite "" "" em_eq_r) ⸬ (#rewrite "" "" ∨⊤) ⸬ 
      (#rewrite "" "" ⊤∨) ⸬ (#rewrite "" "" ∨⊥) ⸬ (#rewrite "" "" ⊥∨) ⸬ (#rewrite "" "" ∧_idem) ⸬ (#rewrite "" "" ∧_contra_r) ⸬ (#rewrite "" "" ∧_contra_l) ⸬ 
      (#rewrite "" "" ∧⊤) ⸬ (#rewrite "" "" ⊤∧) ⸬ (#rewrite "" "" ∧⊥) ⸬ (#rewrite "" "" ⊥∧) ⸬ (#rewrite "" "" ⇒⊤) ⸬ (#rewrite "" "" ⊥⇒) ⸬ (#rewrite "" "" ⊤⇒) ⸬ 
-     (#rewrite "" "" ⇒⊥) ⸬ (#rewrite "" "" ⇒_idem) ⸬ (#rewrite "" "" ⇔⊤) ⸬ (#rewrite "" "" ⊤⇔) ⸬ (#rewrite "" "" ⊥⇔) ⸬ (#rewrite "" "" ⇔⊥) ⸬ 
-     (#rewrite "" "" ⇔_idem) ⸬ (#rewrite "" "" ¬⊤) ⸬ (#rewrite "" "" ¬⊥) ⸬ (#rewrite "" "" ¬¬ₑ_eq) ⸬ (#rewrite "" "" =⊤) ⸬ (#rewrite "" "" ⊤=) ⸬ 
-     (#rewrite "" "" =⊥) ⸬ (#rewrite "" "" ⊥=) ⸬ (#rewrite "" "" [prop] =_idem) ⸬ (#rewrite "" "" ¬=⊥) ⸬ (#rewrite "" "" ¬⊥=) ⸬ (#rewrite "" "" ¬=⊤) ⸬ 
-     (#rewrite "" "" ¬⊤=) ⸬ (#rewrite "" "" [prop] ¬=_idem) ⸬ (#rewrite "" "" [prop] ∀_const) ⸬ (#rewrite "" "" [prop] ∃_const) ⸬ (#rewrite "" "" ¬x=_idem) ⸬ (#rewrite "" "" =¬x_idem) ⸬ 
+     (#rewrite "" "" ⇒⊥) ⸬ (#rewrite "" "" ⇒_refl) ⸬ (#rewrite "" "" ⇔⊤) ⸬ (#rewrite "" "" ⊤⇔) ⸬ (#rewrite "" "" ⊥⇔) ⸬ (#rewrite "" "" ⇔⊥) ⸬ 
+     (#rewrite "" "" ⇔_refl) ⸬ (#rewrite "" "" ¬⊤) ⸬ (#rewrite "" "" ¬⊥) ⸬ (#rewrite "" "" ¬¬ₑ_eq) ⸬ (#rewrite "" "" =⊤) ⸬ (#rewrite "" "" ⊤=) ⸬ 
+     (#rewrite "" "" =⊥) ⸬ (#rewrite "" "" ⊥=) ⸬ (#rewrite "" "" [prop] =_refl) ⸬ (#rewrite "" "" ¬=⊥) ⸬ (#rewrite "" "" ¬⊥=) ⸬ (#rewrite "" "" ¬=⊤) ⸬ 
+     (#rewrite "" "" ¬⊤=) ⸬ (#rewrite "" "" [prop] ¬=_irrefl) ⸬ (#rewrite "" "" [prop] ∀_const) ⸬ (#rewrite "" "" [prop] ∃_const) ⸬ (#rewrite "" "" ¬x=_idem) ⸬ (#rewrite "" "" =¬x_idem) ⸬ 
      (#rewrite "" "" [prop] polarity_switch) ⸬ (#refine "⊤ᵢ") ⸬ □);
      // the rules and ... are added as Leo omits trivially false literals, we account for this using this rule
  
@@ -83,7 +83,7 @@ with applyAnyAtPos $pat ($t0 ⸬ □) ↪ $t0 $pat;
 symbol LitNormRules ≔ 
     (λ pat: String, (#rewrite "" pat =⊤)) ⸬ (λ pat: String, (#rewrite "" pat ⊤=)) ⸬ 
     (λ pat: String, (#rewrite "" pat =⊥)) ⸬ (λ pat: String, (#rewrite "" pat ⊥=)) ⸬
-    (λ pat: String, (#rewrite "" pat [prop] polarity_switch)) ⸬ (λ pat: String, (#rewrite "" pat [prop] =_idem)) ⸬ □;
+    (λ pat: String, (#rewrite "" pat [prop] polarity_switch)) ⸬ (λ pat: String, (#rewrite "" pat [prop] =_refl)) ⸬ □;
 
 
 symbol normalizeTerms ≔ #and (#and (#repeat (#rewrite "" "" ¬⊥)) (#repeat (#rewrite "" "" ¬⊤))) (#repeat (#rewrite "" "" ¬¬ₑ_eq));
@@ -100,7 +100,7 @@ symbol normalizeEqLit ≔
     normalizeTerms)
 ;
 
-symbol close= ≔ (#and (#rewrite "" ".[x in x]" (=_idem o)) (#refine "⊤ᵢ"));
+symbol close= ≔ (#and (#rewrite "" ".[x in x]" (=_refl o)) (#refine "⊤ᵢ"));
 
 symbol closeEq (t: Set) ≔
 (close= #orelse (#and (#rewrite "" ".[x in x = _]" [prop] (=_sym [t])) close=) #orelse (#and (#rewrite "" ".[x in ¬ x = _]" [prop] (=_sym [t])) close=));
@@ -160,7 +160,7 @@ symbol move_¬∃_out [l] [assumeTy:U l] (assumeVar: String) : Tactic ≔ (#and 
  ******************************************************************************/
 
 // Identification of trivially false literals with ⊥
-symbol removeTrivialFalse (pattern: String) ≔ #try ((#rewrite "" pattern [prop] ¬=_idem) #orelse (#rewrite "" pattern ¬⊤));
+symbol removeTrivialFalse (pattern: String) ≔ #try ((#rewrite "" pattern [prop] ¬=_irrefl) #orelse (#rewrite "" pattern ¬⊤));
 
 // Normalisation of eqational literals with ⊤ or ⊥ on one side to non-equational ones
 symbol normalizeLiteral (pattern: String) ≔ (#rewrite "" pattern =⊤) #orelse (#rewrite "left" pattern =⊤) #orelse (#rewrite "" pattern =⊥) #orelse (#rewrite "left" pattern =⊥); 
