@@ -373,13 +373,22 @@ begin
             reflexivity}} 
 end;
 
+symbol ∧_idem_l a b :
+    π ((a ∧ (a ∧ b)) = (a ∧ b)) ≔
+begin
+    assume a b;
+    refine propExt (a ∧ (a ∧ b)) (a ∧ b) _ _
+        {assume h0; refine ∧ₑ₂ h0}
+        {assume h0; refine ∧ᵢ (∧ₑ₁ h0) h0}
+end;
+
 symbol cartesian_prepend_double l0 n0 l n : 
     π (dist_denote ( dist_conj (cartesian_prepend (l0 ⸬ l) (n0 ⸬ n))) = dist_denote (dist_conj ((l0 ++ n0) ⸬ (cartesian_prepend (l0 ⸬ l) (n)) ++ (cartesian_prepend (l) (n0 ⸬ n)))))≔
 begin
     assume l0 n0; assume l n; simplify; rewrite dist_denote_correct_⸬; rewrite dist_denote_correct_⸬; simplify dist_denote; simplify dist_denote;
     rewrite left dist_denote_correct_++; rewrite left dist_denote_correct_++; simplify dist_denote; simplify dist_denote; rewrite cartesian_prepend_sym; 
-    rewrite left dist_denote_correct_++; simplify dist_denote; rewrite prepend_each_add; rewrite .[x in (_ ∧ _ ∧ _ ∧ x) = _] cartesian_prepend_sym; 
-    rewrite .[x in (_ ∧ _ ∧ x ∧ _) = _] cartesian_prepend_sym; 
+    rewrite left dist_denote_correct_++; simplify dist_denote; rewrite prepend_each_add; rewrite ∧_assoc;
+    rewrite right cartesian_prepend_sym; rewrite right cartesian_prepend_sym; rewrite ∧_idem_l;
     reflexivity
 end;
 

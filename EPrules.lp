@@ -184,7 +184,7 @@ opaque symbol Decomp_step [a b : Set] (s t : τ a) (f g : τ(a ⤳ b)):
         {assume h1; 
         have H0 : π (¬ (f s = f t) ⇒ ⊥)
             {rewrite h1;
-            rewrite ¬=_idem;
+            rewrite ¬=_irrefl;
             assume h2; refine h2};
         refine ⊥ₑ (H0 h0)}
         {assume h1; refine h1}

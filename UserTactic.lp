@@ -14,91 +14,25 @@ for clausification steps, including:
 ---------------------------------------------------------------------------
 */
 
-require open Stdlib.HOL Stdlib.Impred Stdlib.List Leo-III-lambdapi-lib.CNFeq;
+require open Stdlib.HOL Stdlib.Impred Stdlib.List Stdlib.String Stdlib.Univ Stdlib.Tactic Leo-III-lambdapi-lib.CNFeq Leo-III-lambdapi-lib.TptpArithmatic;
 
 /******************************************************************************
  *  Setup for the user defined tactic         
  ******************************************************************************/
 
- constant symbol Tactic : TYPE;
  symbol tactic : Set;
  rule τ tactic ↪ Tactic;
 
- constant symbol String : TYPE;
- builtin "String" ≔ String;
- constant symbol string : Set;
- rule τ string ↪ String;
- 
- symbol #rewrite : String → String → Π [a], π a → Tactic;
- builtin "rewrite" ≔ #rewrite;
- 
- symbol #orelse : Tactic → Tactic → Tactic;
- builtin "orelse" ≔ #orelse;
  notation #orelse infix left 10000;
+ symbol #and ≔ &;
  
- symbol #refine : String → Tactic;
- builtin "refine" ≔ #refine;
- 
- symbol #repeat : Tactic → Tactic;
- builtin "repeat" ≔ #repeat;
- 
- symbol #fail : Tactic;
- builtin "fail" ≔ #fail;
- 
- symbol #admit : Tactic;
- builtin "admit" ≔ #admit;
- 
- symbol #and : Tactic → Tactic → Tactic;
- builtin "and" ≔ #and;
- 
- symbol #apply : Π [a], π a → Tactic;
- builtin "apply" ≔ #apply;
- 
- symbol #assume : String → Tactic;
- builtin "assume" ≔ #assume;
- 
- symbol #generalize : Π [a], π a → Tactic;
- builtin "generalize" ≔ #generalize;
- 
- symbol #have : String → Π [a], π a → Tactic;
- builtin "have" ≔ #have; 
- 
- symbol #induction : Tactic;
- builtin "induction" ≔ #induction; 
- 
- symbol #remove : Π [a], π a → Tactic;
- builtin "remove" ≔ #remove;
- 
- symbol #reflexivity : Tactic;
- builtin "reflexivity" ≔ #reflexivity;
- 
- symbol #set : String → Π [a], π a → Tactic;
- builtin "set" ≔ #set;
- 
- symbol #simplify : Tactic;
- builtin "simplify" ≔ #simplify;
-
- symbol #simplify_beta : Tactic;
- builtin "simplify rule off" ≔ #simplify_beta;
- 
- symbol #solve : Tactic;
- builtin "solve" ≔ #solve;
- 
- symbol #symmetry : Tactic;
- builtin "symmetry" ≔ #symmetry;
- 
- symbol #try : Tactic → Tactic;
- builtin "try" ≔ #try;
- 
- symbol #why3 : Tactic;
- builtin "why3" ≔ #why3; 
-
- symbol #change : Tactic;
- builtin "change" ≔ #change;
- 
- // necessary in order to define the tactics
  symbol set0 : Set;
  rule τ set0 ↪ Set; 
+
+ // needed for tactic terms over polymorphic proof-producing lemmas
+
+ unif_rule @η $l $a ≡ Π x:$b, π $c.[x] ↪ [$l ≡ prop; $a ≡ `∀ x:$b, $c.[x]];
+ unif_rule @η $l $a ≡ Π x:$b, @η prop $c.[x] ↪ [$l ≡ prop; $a ≡ `∀ x:$b, $c.[x]];
 
 
 /******************************************************************************
@@ -112,14 +46,64 @@ symbol applyAny : 𝕃 tactic → Tactic;
  symbol listOfAllSimpRules ≔ ((#rewrite "" "" ∨_idem) ⸬ (#rewrite "" "" em_eq_l) ⸬ (#rewrite "" "" em_eq_r) ⸬ (#rewrite "" "" ∨⊤) ⸬ 
      (#rewrite "" "" ⊤∨) ⸬ (#rewrite "" "" ∨⊥) ⸬ (#rewrite "" "" ⊥∨) ⸬ (#rewrite "" "" ∧_idem) ⸬ (#rewrite "" "" ∧_contra_r) ⸬ (#rewrite "" "" ∧_contra_l) ⸬ 
      (#rewrite "" "" ∧⊤) ⸬ (#rewrite "" "" ⊤∧) ⸬ (#rewrite "" "" ∧⊥) ⸬ (#rewrite "" "" ⊥∧) ⸬ (#rewrite "" "" ⇒⊤) ⸬ (#rewrite "" "" ⊥⇒) ⸬ (#rewrite "" "" ⊤⇒) ⸬ 
-     (#rewrite "" "" ⇒⊥) ⸬ (#rewrite "" "" ⇒_idem) ⸬ (#rewrite "" "" ⇔⊤) ⸬ (#rewrite "" "" ⊤⇔) ⸬ (#rewrite "" "" ⊥⇔) ⸬ (#rewrite "" "" ⇔⊥) ⸬ 
-     (#rewrite "" "" ⇔_idem) ⸬ (#rewrite "" "" ¬⊤) ⸬ (#rewrite "" "" ¬⊥) ⸬ (#rewrite "" "" ¬¬ₑ_eq) ⸬ (#rewrite "" "" =⊤) ⸬ (#rewrite "" "" ⊤=) ⸬ 
-     (#rewrite "" "" =⊥) ⸬ (#rewrite "" "" ⊥=) ⸬ (#rewrite "" "" =_idem) ⸬ (#rewrite "" "" ¬=⊥) ⸬ (#rewrite "" "" ¬⊥=) ⸬ (#rewrite "" "" ¬=⊤) ⸬ 
-     (#rewrite "" "" ¬⊤=) ⸬ (#rewrite "" "" ¬=_idem) ⸬ (#rewrite "" "" ∀_const) ⸬ (#rewrite "" "" ∃_const) ⸬ (#rewrite "" "" ¬x=_idem) ⸬ (#rewrite "" "" =¬x_idem) ⸬ 
-     (#rewrite "" "" polarity_switch) ⸬ (#refine "⊤ᵢ") ⸬ □);
+     (#rewrite "" "" ⇒⊥) ⸬ (#rewrite "" "" ⇒_refl) ⸬ (#rewrite "" "" ⇔⊤) ⸬ (#rewrite "" "" ⊤⇔) ⸬ (#rewrite "" "" ⊥⇔) ⸬ (#rewrite "" "" ⇔⊥) ⸬ 
+     (#rewrite "" "" ⇔_refl) ⸬ (#rewrite "" "" ¬⊤) ⸬ (#rewrite "" "" ¬⊥) ⸬ (#rewrite "" "" ¬¬ₑ_eq) ⸬ (#rewrite "" "" =⊤) ⸬ (#rewrite "" "" ⊤=) ⸬ 
+     (#rewrite "" "" =⊥) ⸬ (#rewrite "" "" ⊥=) ⸬ (#rewrite "" "" [prop] =_refl) ⸬ (#rewrite "" "" ¬=⊥) ⸬ (#rewrite "" "" ¬⊥=) ⸬ (#rewrite "" "" ¬=⊤) ⸬ 
+     (#rewrite "" "" ¬⊤=) ⸬ (#rewrite "" "" [prop] ¬=_irrefl) ⸬ (#rewrite "" "" [prop] ∀_const) ⸬ (#rewrite "" "" [prop] ∃_const) ⸬ (#rewrite "" "" ¬x=_idem) ⸬ (#rewrite "" "" =¬x_idem) ⸬ 
+     (#rewrite "" "" [prop] polarity_switch) ⸬ (#refine "⊤ᵢ") ⸬ □);
      // the rules and ... are added as Leo omits trivially false literals, we account for this using this rule
  
- symbol applyAllSimplifications ≔ #repeat (applyAny listOfAllSimpRules);
+ symbol applyAllSimplifications ≔ #repeat (applyAny listOfAllSimpRules #orelse #simplify_beta);
+
+ symbol applyAllSimplificationsOnce ≔ applyAny listOfAllSimpRules;
+
+ // version of the tactic also applying the arithmatic rules
+
+ symbol listOfAllArithRules ≔ ((#rewrite "" "" [prop] (tptp_difference_simp [tptp_int])) ⸬ (#rewrite "" "" [prop] (tptp_lesseq_simp [tptp_int])) ⸬ 
+      (#rewrite "" "" [prop] (tptp_greater_simp [tptp_int])) ⸬ (#rewrite "" "" [prop] (tptp_greatereq_simp [tptp_int])) ⸬
+
+      (#rewrite "" "" [prop] (tptp_difference_simp [tptp_rat])) ⸬ (#rewrite "" "" [prop] (tptp_lesseq_simp [tptp_rat])) ⸬ 
+      (#rewrite "" "" [prop] (tptp_greater_simp [tptp_rat])) ⸬ (#rewrite "" "" [prop] (tptp_greatereq_simp [tptp_rat])) ⸬
+
+      (#rewrite "" "" [prop] (tptp_difference_simp [tptp_real])) ⸬ (#rewrite "" "" [prop] (tptp_lesseq_simp [tptp_real])) ⸬ 
+      (#rewrite "" "" [prop] (tptp_greater_simp [tptp_real])) ⸬ (#rewrite "" "" [prop] (tptp_greatereq_simp [tptp_real])) ⸬ □);
+
+ symbol applyAllSimplificationsWithArithmatic ≔ #repeat ((applyAny listOfAllSimpRules #orelse applyAny listOfAllArithRules) #orelse #simplify_beta);
+
+ symbol applyAllSimplificationsWithArithmaticOnce ≔ (applyAny listOfAllSimpRules #orelse applyAny listOfAllArithRules);
+
+/******************************************************************************
+*  Definition of Leo-III literal normalization
+******************************************************************************/
+
+symbol applyAnyAtPos : String → 𝕃 (string ⤳ tactic) → Tactic;
+rule applyAnyAtPos $pat ($t0 ⸬ ($t1 ⸬ $tl)) ↪ ($t0 $pat) #orelse (applyAnyAtPos $pat ($t1 ⸬ $tl))
+with applyAnyAtPos $pat ($t0 ⸬ □) ↪ $t0 $pat;
+
+symbol LitNormRules ≔ 
+    (λ pat: String, (#rewrite "" pat =⊤)) ⸬ (λ pat: String, (#rewrite "" pat ⊤=)) ⸬ 
+    (λ pat: String, (#rewrite "" pat =⊥)) ⸬ (λ pat: String, (#rewrite "" pat ⊥=)) ⸬
+    (λ pat: String, (#rewrite "" pat [prop] polarity_switch)) ⸬ (λ pat: String, (#rewrite "" pat [prop] =_refl)) ⸬ □;
+
+
+symbol normalizeTerms ≔ #and (#and (#repeat (#rewrite "" "" ¬⊥)) (#repeat (#rewrite "" "" ¬⊤))) (#repeat (#rewrite "" "" ¬¬ₑ_eq));
+
+symbol normalizeEqLit ≔ 
+#and
+  normalizeTerms
+  (#and
+    (#and 
+      (#and ((#repeat (applyAnyAtPos ".[x in x = _]" LitNormRules)))
+            (#repeat (applyAnyAtPos ".[x in _ = x]" LitNormRules)))
+      (#and ((#repeat (applyAnyAtPos ".[x in ¬ x = _]" LitNormRules)))
+            (#repeat (applyAnyAtPos ".[x in _ = ¬ x]" LitNormRules))))
+    normalizeTerms)
+;
+
+symbol close= ≔ (#and (#rewrite "" ".[x in x]" (=_refl o)) (#refine "⊤ᵢ"));
+
+symbol closeEq (t: Set) ≔
+(close= #orelse (#and (#rewrite "" ".[x in x = _]" [prop] (=_sym [t])) close=) #orelse (#and (#rewrite "" ".[x in ¬ x = _]" [prop] (=_sym [t])) close=));
 
 
 /******************************************************************************
@@ -128,13 +112,13 @@ symbol applyAny : 𝕃 tactic → Tactic;
 
 // Boolean identities
 
-symbol normAsso ≔ #repeat ((#rewrite "" "" ∧_assoc) #orelse (#rewrite "" "" ∨_assoc));
+symbol normAsso ≔ #repeat ((#rewrite "" "" [prop] ∧_assoc) #orelse (#rewrite "" "" [prop] ∨_assoc));
 
-symbol normAsso_∨ ≔ #repeat (#rewrite "" "" ∨_assoc);
+symbol normAsso_∨ ≔ #repeat (#rewrite "" "" [prop] ∨_assoc);
 
-symbol normAsso_∧ ≔ #repeat (#rewrite "" "" ∧_assoc);
+symbol normAsso_∧ ≔ #repeat (#rewrite "" "" [prop] ∧_assoc);
 
-symbol allCNFids_list ≔ ((#rewrite "" "" deMorgan_∧) ⸬ (#rewrite "" "" deMorgan_∨) ⸬ (#rewrite "" "" ⇒=∨) ⸬ (#rewrite "" "" ¬⇒=∧¬) ⸬ (#and (#rewrite "" "" ∧∨_dist_l) normAsso) ⸬ (#and (#rewrite "" "" ∧∨_dist_r) normAsso) ⸬ (#rewrite "" "" ¬¬ₑ_eq) ⸬ (#rewrite "" "" ∨_assoc) ⸬ (#rewrite "" "" ∧_assoc) ⸬ □);
+symbol allCNFids_list ≔ ((#rewrite "" "" [prop] deMorgan_∧) ⸬ (#rewrite "" "" [prop] deMorgan_∨) ⸬ (#rewrite "" "" [prop] ⇒=∨) ⸬ (#rewrite "" "" [prop] ¬⇒=∧¬) ⸬ (#and (#rewrite "" "" [prop] ∧∨_dist_l) normAsso) ⸬ (#and (#rewrite "" "" [prop] ∧∨_dist_r) normAsso) ⸬ (#rewrite "" "" ¬¬ₑ_eq) ⸬ (#rewrite "" "" [prop] ∨_assoc) ⸬ (#rewrite "" "" [prop] ∧_assoc) ⸬ □);
 
 symbol boolIds ≔ (applyAny allCNFids_list);
 
@@ -143,9 +127,9 @@ symbol onlyBoolIds ≔ #and (#repeat boolIds) #reflexivity;
 
 // skolemisazion
 
-symbol skolemProzess_∃ sk_def : Tactic ≔ (#and (#and (#rewrite "" "" ∃_skolem) #simplify_beta) sk_def);
+symbol skolemProzess_∃ sk_def : Tactic ≔ (#and (#and (#rewrite "" "" [prop] ∃_skolem) #simplify_beta) sk_def);
 
-symbol skolemProzess_∀ sk_def : Tactic ≔ (#and (#and (#rewrite "" "" ∀_skolem) #simplify_beta) sk_def);
+symbol skolemProzess_∀ sk_def : Tactic ≔ (#and (#and (#rewrite "" "" [prop] ∀_skolem) #simplify_beta) sk_def);
 
 symbol skolemProzess sk_def : Tactic ≔ (skolemProzess_∀ sk_def) #orelse (skolemProzess_∃ sk_def);
 
@@ -164,11 +148,11 @@ symbol stepwise_quants: 𝕃 tactic → Tactic;
 rule stepwise_quants ($sk1 ⸬ ($sk2 ⸬ $sk3)) ↪ #repeat ((#and $sk1 (stepwise_quants ($sk2 ⸬ $sk3))) #orelse boolIds)
 with stepwise_quants ($sk1 ⸬ □) ↪ #and (#repeat ($sk1 #orelse boolIds)) #reflexivity;
 
-symbol move_∀_out_dijs ≔ #repeat (#rewrite  "" "" ∀∨_dist_r) #orelse (#rewrite "" "" ∀∨_dist_l);
+symbol move_∀_out_dijs ≔ #repeat (#rewrite "" "" [prop] ∀∨_dist_r) #orelse (#rewrite "" "" [prop] ∀∨_dist_l);
 
-symbol move_∀_out (assumeVar: Tactic) ≔ ((#and (#and (((#and (#repeat  (#rewrite "" ".[x in x = _]" ¬¬ₑ_eq)) (#refine "∀_ext _"))) #orelse (#refine "∀_ext _")) (#simplify_beta)) assumeVar) #orelse ((#rewrite "" "" ∀∧_dist_r) #orelse (#rewrite  "" "" ∀∧_dist_l) #orelse (#rewrite  "" "" ∀∨_dist_r) #orelse (#rewrite "" "" ∀∨_dist_l)));
+symbol move_∀_out [l] [assumeTy:U l] (assumeVar: String) : Tactic ≔ ((#and (#and (((#and (#repeat  (#rewrite "" ".[x in x = _]" ¬¬ₑ_eq)) (#refine "∀_ext _"))) #orelse (#refine "∀_ext _")) (#simplify_beta)) (#assume assumeVar [l] [assumeTy] (λ X:η assumeTy, nothing))) #orelse ((#rewrite "" "" [prop] ∀∧_dist_r) #orelse (#rewrite "" "" [prop] ∀∧_dist_l) #orelse (#rewrite "" "" [prop] ∀∨_dist_r) #orelse (#rewrite "" "" [prop] ∀∨_dist_l)));
 
-symbol move_¬∃_out (assumeVar: Tactic) ≔ (#and (#rewrite "" "" ¬∃=∀¬) (move_∀_out assumeVar));
+symbol move_¬∃_out [l] [assumeTy:U l] (assumeVar: String) : Tactic ≔ (#and (#rewrite "" "" [prop] ¬∃=∀¬) (move_∀_out [l] [assumeTy] assumeVar));
 
 
 /******************************************************************************
@@ -176,7 +160,7 @@ symbol move_¬∃_out (assumeVar: Tactic) ≔ (#and (#rewrite "" "" ¬∃=∀¬)
  ******************************************************************************/
 
 // Identification of trivially false literals with ⊥
-symbol removeTrivialFalse (pattern: String) ≔ #try ((#rewrite "" pattern ¬=_idem) #orelse (#rewrite "" pattern ¬⊤));
+symbol removeTrivialFalse (pattern: String) ≔ #try ((#rewrite "" pattern [prop] ¬=_irrefl) #orelse (#rewrite "" pattern ¬⊤));
 
 // Normalisation of eqational literals with ⊤ or ⊥ on one side to non-equational ones
 symbol normalizeLiteral (pattern: String) ≔ (#rewrite "" pattern =⊤) #orelse (#rewrite "left" pattern =⊤) #orelse (#rewrite "" pattern =⊥) #orelse (#rewrite "left" pattern =⊥); 
